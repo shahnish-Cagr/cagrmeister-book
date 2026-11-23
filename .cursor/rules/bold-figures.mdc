@@ -1,0 +1,21 @@
+---
+description: Numeric figures in the book UI are always bold
+alwaysApply: true
+---
+
+# Bold figures
+
+Every number shown in the interface is bold. This includes amounts, prices, quantities, percentages, index levels, and gains.
+
+- Use IBM Plex Mono (`var(--f-mono)`), `font-variant-numeric: tabular-nums`, and `font-weight: 600`.
+- Do not leave a new figure at 400 or 500.
+- Labels, names, and buttons stay at their own weight. Only the number is bold.
+- Colour a gain or loss with `.up` or `.down`. The weight stays 600.
+
+```css
+.example-value {
+  font-family: var(--f-mono);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+```
