@@ -1,0 +1,16 @@
+{
+  "firm": "CAGRMEISTER",
+  "valuation": "book",
+  "valuationNote": "Market prices are not in the transaction files. Portfolio value is the cost still on the books, plus cash when capital inflows are recorded.",
+  "assets": [
+    { "id": "stocks", "label": "Stocks", "color": "#16324f" },
+    { "id": "equity-mf", "label": "Equity Mutual Funds", "color": "#3d6b8c" },
+    { "id": "liquid", "label": "Liquid Funds", "color": "#7d9a7e" },
+    { "id": "reit", "label": "REITs", "color": "#8d7b6a" },
+    { "id": "invit", "label": "InvITs", "color": "#5c6b7a" },
+    { "id": "gold", "label": "Gold", "color": "#a68445" },
+    { "id": "bond", "label": "Bonds", "color": "#6f685f" },
+    { "id": "cash", "label": "Cash", "color": "#c4b8a5" }
+  ],
+  "books": []
+}

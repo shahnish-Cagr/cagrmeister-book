@@ -1,56 +1,137 @@
-import { useState } from "react";
 import { useNavigate } from "react-router";
-import { BOOKS, FAMILY_GROUP, bookLabel, scopeLabel, type BookId } from "../book";
-import { SCOPES } from "../book";
-import { useBook } from "../scope";
-import { Empty, ScreenHead, SearchField } from "../ui";
+import { bookById, bookGroups, positionsFor, totals } from "../data/book";
+import { Money, Percent } from "../components";
+import { usePortal } from "../state";
 
 export function Family() {
-  const { book, setBook, scope, setScope } = useBook();
-  const [q, setQ] = useState("");
+  const portal = usePortal();
   const navigate = useNavigate();
-  const needle = q.trim().toLowerCase();
-  const list = SCOPES.filter((row) => row.label.toLowerCase().includes(needle));
+  const book = bookById(portal.bookId);
+  const family = totals(positionsFor(portal.bookId, "family"));
+  const members = book.members
+    .map((member) => ({ ...member, ...totals(positionsFor(portal.bookId, member.id, false)) }))
+    .sort((a, b) => b.value - a.value);
+  const groups = bookGroups(book).map((group) => ({
+    ...group,
+    ...totals(positionsFor(portal.bookId, `g:${group.id}`, false)),
+  }));
+  const peak = Math.max(...members.map((member) => Math.abs(member.gainPct)), 0);
+
+  function openMember(id: string) {
+    portal.setContext(id);
+    navigate("/");
+  }
 
   return (
     <>
-      <ScreenHead title={FAMILY_GROUP} sub={`${bookLabel(book)} · ${scopeLabel(scope)}`} to="/book" back="Book" />
-      <nav className="ledger-switch" aria-label="Book">
-        {BOOKS.map((row) => (
-          <button
-            key={row.id}
-            type="button"
-            className={book === row.id ? "on" : ""}
-            aria-pressed={book === row.id}
-            onClick={() => setBook(row.id as BookId)}
-          >
-            {row.label}
-          </button>
-        ))}
-      </nav>
-      <SearchField value={q} onChange={setQ} placeholder="Search portfolios" />
-      {list.length === 0 ? (
-        <Empty>Nothing matches.</Empty>
-      ) : (
-        <ul className="sheet">
-          {list.map((row) => (
-            <li key={row.id}>
-              <button
-                type="button"
-                className="name-row pick"
-                onClick={() => {
-                  setScope(row.id);
-                  navigate("/book");
-                }}
-              >
-                <span className="name-row-title">{row.label}</span>
-                {scope === row.id ? <span className="name-row-amt">Viewing</span> : <span />}
+      <header className="page-heading">
+        <p className="eyebrow">Family office</p>
+        <h1>{book.name}</h1>
+        <p>Consolidated across <span className="num">{members.length}</span> {members.length === 1 ? "member" : "members"}</p>
+      </header>
+      <section className="family-hero">
+        <span>Total family wealth</span>
+        <strong><Money value={family.value} /></strong>
+        <p className={family.gain < 0 ? "family-move down" : "family-move up"}>
+          <span className="move-tag">Unrealised</span>
+          <Money value={family.gain} signed />
+          {" · "}
+          <Percent value={family.gainPct} />
+        </p>
+        <p className="family-realised">
+          <span>Realised</span>
+          <Money value={family.realised} signed />
+        </p>
+        <div>
+          <span>Invested capital</span>
+          <Money value={family.cost} />
+        </div>
+      </section>
+      {groups.length ? (
+        <section className="section">
+          <div className="section-head">
+            <div>
+              <p className="eyebrow">Groups</p>
+              <h2>Family groups</h2>
+            </div>
+          </div>
+          <div className="family-members">
+            {groups.map((group) => {
+              const share = family.value ? (group.value / family.value) * 100 : 0;
+              return (
+                <button key={group.id} type="button" onClick={() => openMember(`g:${group.id}`)}>
+                  <span className="member-avatar">{initials(group.name)}</span>
+                  <span>
+                    <strong>{group.name}</strong>
+                    <small><span className="num">{group.memberIds.length}</span> members</small>
+                  </span>
+                  <span className="member-figures">
+                    <Money value={group.value} />
+                    <small><span className="num">{share.toFixed(1)}%</span> of family</small>
+                  </span>
+                  <Caret />
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
+      <section className="section">
+        <div className="section-head">
+          <div>
+            <p className="eyebrow">Members</p>
+            <h2>Family distribution</h2>
+          </div>
+        </div>
+        <div className="family-members">
+          {members.map((member) => {
+            const share = family.value ? (member.value / family.value) * 100 : 0;
+            return (
+              <button key={member.id} type="button" onClick={() => openMember(member.id)}>
+                <span className="member-avatar">{initials(member.name)}</span>
+                <span>
+                  <strong>{member.name}</strong>
+                  <small><span className="num">{member.count}</span> holdings</small>
+                </span>
+                <span className="member-figures">
+                  <Money value={member.value} />
+                  <small><span className="num">{share.toFixed(1)}%</span> of family</small>
+                </span>
+                <Caret />
               </button>
-            </li>
+            );
+          })}
+        </div>
+      </section>
+      <section className="section">
+        <div className="section-head">
+          <div>
+            <p className="eyebrow">Comparison</p>
+            <h2>Member performance</h2>
+          </div>
+        </div>
+        <div className="member-bars">
+          {members.map((member) => (
+            <div key={member.id}>
+              <b>{member.name}</b>
+              <i><em className={member.gainPct < 0 ? "down" : ""} style={{ width: peak ? `${(Math.abs(member.gainPct) / peak) * 100}%` : "0%" }} /></i>
+              <Percent value={member.gainPct} />
+            </div>
           ))}
-        </ul>
-      )}
-      {book === "fo" && <p className="note">No positions in F&O. Choosing a portfolio still sets who you are reading.</p>}
+        </div>
+      </section>
     </>
+  );
+}
+
+function initials(name: string) {
+  return name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0] ?? "").join("").toUpperCase();
+}
+
+function Caret() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="m9 18 6-6-6-6" />
+    </svg>
   );
 }

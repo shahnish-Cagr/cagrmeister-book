@@ -38,6 +38,26 @@ export function pct(n: number, digits = 2): string {
   return `${(n * 100).toFixed(digits)}%`;
 }
 
+export function units(n: number): string {
+  return Number.isInteger(n) ? group(n, 0) : group(n, 2);
+}
+
+export function rupee(n: number): string {
+  return `₹ ${inr(n)}`;
+}
+
+export function signedRupee(n: number): string {
+  if (n > 0) return `+₹ ${inr(n)}`;
+  if (n < 0) return `−₹ ${inr(Math.abs(n))}`;
+  return `₹ ${inr(0)}`;
+}
+
+export function signedPct(n: number, digits = 2): string {
+  if (n > 0) return `+${pct(n, digits)}`;
+  if (n < 0) return `−${pct(Math.abs(n), digits)}`;
+  return pct(0, digits);
+}
+
 export function longDate(iso: string): string {
   const [y, m, d] = iso.split("-").map(Number);
   return `${d} ${MONTHS[(m ?? 1) - 1]} ${y}`;

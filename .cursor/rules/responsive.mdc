@@ -1,0 +1,14 @@
+---
+description: Layouts must fit every screen from a 320px phone through desktop
+alwaysApply: true
+---
+
+# Responsive layout
+
+Every screen works from 320px wide through a desktop window. A change is unfinished until that is true.
+
+- The page does not scroll sideways. Long names truncate. Chips wrap.
+- Rows use flexible columns (`minmax(0, 1fr)`). Do not give a row a fixed width that exceeds a 320px screen.
+- Amounts and labels may stack or wrap. They must not overlap or get clipped.
+- Tapped controls stay at least 44px, except a compact inline mark such as the XIRR button.
+- After a layout change, check 320px, a phone width around 390px, and a desktop width. Use the Mobile, iPad, and Computer previews as well.

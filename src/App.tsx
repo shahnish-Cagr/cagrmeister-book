@@ -1,38 +1,97 @@
-import { Navigate, Route, Routes } from "react-router";
-import { BookProvider } from "./scope";
-import { Phone } from "./shell";
-import { Open } from "./screens/Open";
-import { Home } from "./screens/Home";
-import { Sleeve } from "./screens/Sleeve";
-import { Name } from "./screens/Name";
-import { Position } from "./screens/Position";
+import { useLayoutEffect, useRef } from "react";
+import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router";
+import logo from "@cagrmeister/design/logo.png";
+import { PortalProvider, usePortal } from "./state";
+import { Login } from "./screens/Login";
+import { Shell } from "./shell";
+import { Overview } from "./screens/Overview";
+import { Holdings } from "./screens/Holdings";
+import { Holding } from "./screens/Holding";
+import { Performance } from "./screens/Performance";
+import { Allocation } from "./screens/Allocation";
+import { Transactions } from "./screens/Transactions";
+import { Transaction } from "./screens/Transaction";
 import { Family } from "./screens/Family";
-import { Search } from "./screens/Search";
-import { Weights } from "./screens/Weights";
-import { Ledger } from "./screens/Ledger";
-import { Menu, MenuPage } from "./screens/Menu";
+import { Reports } from "./screens/Reports";
+import { Settings } from "./screens/Settings";
+import { More } from "./screens/More";
+
+function Restore() {
+  return (
+    <main className="gate restore" aria-busy="true" aria-live="polite">
+      <img src={logo} alt="" className="mark" />
+      <p>Opening your book</p>
+    </main>
+  );
+}
+
+function LoginHistory() {
+  const { code, booting } = usePortal();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const signedIn = useRef(false);
+  const trap = useRef(false);
+  const skip = useRef(false);
+
+  useLayoutEffect(() => {
+    if (booting) return;
+    if (code) {
+      signedIn.current = true;
+      trap.current = false;
+      skip.current = false;
+      return;
+    }
+    if (signedIn.current) {
+      trap.current = true;
+      signedIn.current = false;
+    }
+    if (location.pathname !== "/") {
+      trap.current = true;
+      navigate("/", { replace: true });
+      return;
+    }
+    if (!trap.current || skip.current) {
+      skip.current = false;
+      return;
+    }
+    skip.current = true;
+    navigate("/");
+  }, [booting, code, location.key, location.pathname, navigate]);
+
+  return null;
+}
+
+function Gate() {
+  const portal = usePortal();
+  if (!portal.code) {
+    return portal.booting ? <Restore /> : <Login />;
+  }
+  return (
+      <Routes>
+        <Route element={<Shell />}>
+          <Route path="/" element={<Overview />} />
+          <Route path="/holdings" element={<Holdings />} />
+          <Route path="/holdings/:id" element={<Holding />} />
+          <Route path="/performance" element={<Performance />} />
+          <Route path="/allocation" element={<Allocation />} />
+          <Route path="/allocation/:asset" element={<Allocation />} />
+          <Route path="/transactions" element={<Transactions />} />
+          <Route path="/transactions/:id" element={<Transaction />} />
+          <Route path="/family" element={<Family />} />
+          <Route path="/reports" element={<Reports />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/more" element={<More />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+      </Routes>
+  );
+}
 
 export function App() {
   return (
-    <BookProvider>
-      <Phone>
-        <Routes>
-          <Route path="/" element={<Navigate to="/open" replace />} />
-          <Route path="/open" element={<Open />} />
-          <Route path="/book" element={<Home />} />
-          <Route path="/family" element={<Family />} />
-          <Route path="/sleeve/:sleeveId" element={<Sleeve />} />
-          <Route path="/name/:id" element={<Name />} />
-          <Route path="/name/:id/summary" element={<Position mode="summary" />} />
-          <Route path="/name/:id/transactions" element={<Position mode="transactions" />} />
-          <Route path="/search" element={<Search />} />
-          <Route path="/weights" element={<Weights />} />
-          <Route path="/ledger" element={<Ledger />} />
-          <Route path="/menu" element={<Menu />} />
-          <Route path="/menu/:page" element={<MenuPage />} />
-          <Route path="*" element={<Navigate to="/book" replace />} />
-        </Routes>
-      </Phone>
-    </BookProvider>
+    <PortalProvider>
+      <LoginHistory />
+      <Gate />
+    </PortalProvider>
   );
 }

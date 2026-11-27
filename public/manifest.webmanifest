@@ -1,0 +1,13 @@
+{
+  "name": "CAGRMEISTER Portfolio",
+  "short_name": "Portfolio",
+  "description": "Portfolio reporting for a private wealth client.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#f4f5f2",
+  "theme_color": "#132f43",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
