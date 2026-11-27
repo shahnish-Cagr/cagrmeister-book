@@ -133,8 +133,6 @@ export default defineConfig({
   server: {
     port: 5174,
     host: "127.0.0.1",
-    // The design package is linked with file:, so its fonts live next door.
-    fs: { allow: [root, path.resolve(root, "../cagrmeister-design")] },
     watch: { ignored: ["**/client_wise_data/**"] },
   },
 });

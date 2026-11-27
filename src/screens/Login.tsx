@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { isPassword } from "../client/api";
-import logo from "@cagrmeister/design/logo.png";
+import logo from "../assets/logo.png";
 import { usePortal } from "../state";
 
 export function Login() {

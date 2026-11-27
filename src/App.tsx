@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef } from "react";
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router";
-import logo from "@cagrmeister/design/logo.png";
+import logo from "./assets/logo.png";
 import { PortalProvider, usePortal } from "./state";
 import { Login } from "./screens/Login";
 import { Shell } from "./shell";

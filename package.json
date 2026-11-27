@@ -8,7 +8,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@cagrmeister/design": "file:../cagrmeister-design",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router": "^7.1.0",
