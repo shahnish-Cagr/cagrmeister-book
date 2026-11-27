@@ -61,40 +61,12 @@ function clientBooks(): Plugin {
   };
 }
 
-let passwordIndexCache: { mtimeMs: number; map: Record<string, string> } | null = null;
-
 function locate(password: string) {
-  const relative = passwordIndex()?.[password];
-  if (!relative) return null;
-  const book = bookPath(relative);
-  if (!book) return null;
-  const versionPath = versionFile(path.dirname(book));
-  if (!versionPath) return null;
+  const dir = path.join(dataRoot, `client_${password}`);
+  const book = path.join(dir, `${password}.json`);
+  const versionPath = path.join(dir, `${password}.version.json`);
+  if (!fs.existsSync(book) || !fs.existsSync(versionPath)) return null;
   return { book, versionPath };
-}
-
-function passwordIndex() {
-  const indexPath = path.join(dataRoot, "passwords.json");
-  if (!fs.existsSync(indexPath)) return null;
-  const mtimeMs = fs.statSync(indexPath).mtimeMs;
-  if (passwordIndexCache?.mtimeMs === mtimeMs) return passwordIndexCache.map;
-  const parsed = JSON.parse(fs.readFileSync(indexPath, "utf8")) as unknown;
-  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
-  const map: Record<string, string> = {};
-  for (const [password, file] of Object.entries(parsed)) {
-    if (typeof file === "string") map[password] = file;
-  }
-  passwordIndexCache = { mtimeMs, map };
-  return map;
-}
-
-function bookPath(relative: string) {
-  const portable = relative.replace(/\\/g, "/");
-  if (!/^client_[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+\.json$/.test(portable)) return null;
-  const book = path.resolve(dataRoot, portable);
-  const fromRoot = path.relative(dataRoot, book);
-  if (fromRoot.startsWith("..") || path.isAbsolute(fromRoot)) return null;
-  return book;
 }
 
 function publicVersion(version: Record<string, unknown>, file: string) {
@@ -108,13 +80,6 @@ function publicVersion(version: Record<string, unknown>, file: string) {
     asOf: text("asOf", "as_of"),
     file,
   };
-}
-
-function versionFile(dir: string) {
-  const preferred = path.join(dir, "version.json");
-  if (fs.existsSync(preferred)) return preferred;
-  const found = fs.readdirSync(dir).filter((name) => name.endsWith(".version.json"));
-  return found.length === 1 ? path.join(dir, found[0]) : null;
 }
 
 function readBody(req: IncomingMessage) {

@@ -16,9 +16,6 @@ const PERIOD_COPY: Record<PeriodId, string> = {
 const NOTES = {
   currency: ["Currency", "Amounts on this book are in Indian rupees."],
   refresh: ["Data refresh", "The book updates when you sync. It does not refresh on a schedule."],
-  biometric: ["Biometric login", "Biometric login is not available in this preview."],
-  password: ["Change password", "This book opens with the password issued with it. This screen does not set a new one."],
-  session: ["Active session", "You are signed in on this browser."],
   privacy: ["Privacy policy and terms", `${FIRM} portfolio reporting. Privacy and terms for a live book will sit with the firm. This screen is a preview.`],
 } as const;
 
@@ -118,28 +115,6 @@ export function Settings() {
       </section>
 
       <section className="settings-group">
-        <h2 className="settings-title"><ShieldIcon /> Security</h2>
-        <div className="setting-row">
-          <span>
-            <b>Biometric login</b>
-            <small>Placeholder for supported devices</small>
-          </span>
-          <button type="button" className="switch" aria-pressed={false} aria-label="Biometric login" onClick={() => setPanel("biometric")}>
-            <i />
-          </button>
-        </div>
-        <button type="button" className="setting-row" onClick={() => setPanel("password")}>
-          <span><b>Change password</b></span>
-          <Caret />
-        </button>
-        <button type="button" className="setting-row" onClick={() => setPanel("session")}>
-          <span><b>Active session</b></span>
-          <em>This device</em>
-          <Caret />
-        </button>
-      </section>
-
-      <section className="settings-group">
         <h2 className="settings-title"><InfoIcon /> Support</h2>
         <a className="setting-row" href="mailto:support@cagrmeister.in">
           <span>
@@ -228,15 +203,6 @@ function RefreshIcon() {
     <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
       <path d="M20 7h-5V2" />
       <path d="M20 7a8 8 0 1 0 1 7" />
-    </svg>
-  );
-}
-
-function ShieldIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11" />
-      <path d="m9 12 2 2 4-5" />
     </svg>
   );
 }
