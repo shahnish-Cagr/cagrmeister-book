@@ -22,27 +22,31 @@ export function Login() {
   return (
     <main className="gate">
       <form className="gate-card" onSubmit={(event) => void submit(event)}>
-        <img src={logo} alt="CAGRMEISTER" className="mark" />
-        <header className="page-head">
-          <h1>Open your book</h1>
-          <p>Enter the password from your adviser.</p>
-        </header>
-        <label className="field">
-          Password
-          <input
-            value={code}
-            onChange={(event) => setCode(event.target.value.replace(/[^A-Za-z0-9_]/g, "").slice(0, 32))}
-            type="password"
-            autoComplete="current-password"
-            autoFocus
-            disabled={opening}
-            aria-label="Password"
-          />
-        </label>
-        {error ? <p className="gate-error">{error}</p> : null}
-        <button type="submit" className="primary" disabled={opening || !isPassword(code)}>
-          {opening ? "Checking version" : "Open book"}
-        </button>
+        <div className="gate-brand">
+          <img src={logo} alt="CAGRMEISTER" className="mark" />
+          <header className="page-head">
+            <h1>Open your book</h1>
+            <p>Enter the password from your adviser.</p>
+          </header>
+        </div>
+        <div className="gate-form">
+          <label className="field">
+            Password
+            <input
+              value={code}
+              onChange={(event) => setCode(event.target.value.replace(/[^A-Za-z0-9_]/g, "").slice(0, 32))}
+              type="password"
+              autoComplete="current-password"
+              autoFocus
+              disabled={opening}
+              aria-label="Password"
+            />
+          </label>
+          {error ? <p className="gate-error">{error}</p> : null}
+          <button type="submit" className="primary" disabled={opening || !isPassword(code)}>
+            {opening ? "Checking version" : "Open book"}
+          </button>
+        </div>
       </form>
     </main>
   );

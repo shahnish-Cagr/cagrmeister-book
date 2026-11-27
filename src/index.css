@@ -747,12 +747,15 @@ details { margin-top: 10px; color: var(--secondary); font-size: 13px; }
 details p { margin-top: 6px; }
 
 .gate { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px 16px; }
+main.gate { width: 100%; max-width: none; margin: 0; background: #fbfbf9; }
 .gate.restore { flex-direction: column; gap: 14px; }
 .gate.restore .mark { height: 28px; }
 .gate.restore p { color: var(--muted); font-size: 14px; }
-.gate-card { display: flex; flex-direction: column; gap: 16px; width: min(420px, 100%); padding: 28px 22px; border: 1px solid var(--line); border-radius: 18px; background: #fff; }
+.gate-card { display: flex; flex-direction: column; justify-content: center; gap: 28px; width: min(420px, 100%); min-height: min(500px, calc(100vh - 48px)); padding: 48px 28px; border: 1px solid var(--line); border-radius: 18px; background: #fff; }
+.gate-brand, .gate-form { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .gate-card .mark { align-self: center; height: 28px; }
 .gate-card input { font-family: var(--mono); font-weight: 600; letter-spacing: 0.14em; }
+.gate-card input, .gate-card .primary { min-height: 44px; }
 .gate-error { color: var(--down); font-size: 13px; }
 
 .holding-row > svg,

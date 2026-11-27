@@ -27,32 +27,21 @@ function clientBooks(): Plugin {
         send(res, 404, { error: "not-found" });
         return;
       }
-      const dir = clientDir(code);
-      if (!dir) {
+      const located = locate(code);
+      if (!located) {
         send(res, 404, { error: "not-found" });
         return;
       }
-      const versionPath = versionFile(dir);
-      if (!versionPath) {
-        send(res, 404, { error: "not-found" });
-        return;
-      }
-      const version = JSON.parse(fs.readFileSync(versionPath, "utf8")) as { file?: unknown };
-      const file = typeof version.file === "string" ? safeJsonName(version.file) : null;
-      if (!file) {
-        send(res, 404, { error: "not-found" });
-        return;
-      }
+      const version = JSON.parse(fs.readFileSync(located.versionPath, "utf8")) as Record<string, unknown>;
       if (url === "/api/client/version") {
-        send(res, 200, version);
+        send(res, 200, publicVersion(version, path.basename(located.book)));
         return;
       }
-      const dataPath = path.resolve(dir, file);
-      if (!fs.existsSync(dataPath)) {
+      if (!fs.existsSync(located.book)) {
         send(res, 404, { error: "not-found" });
         return;
       }
-      send(res, 200, JSON.parse(fs.readFileSync(dataPath, "utf8")));
+      send(res, 200, JSON.parse(fs.readFileSync(located.book, "utf8")));
     } catch {
       send(res, 400, { error: "unreadable" });
     }
@@ -72,19 +61,53 @@ function clientBooks(): Plugin {
   };
 }
 
-function clientDir(password: string) {
-  if (!fs.existsSync(dataRoot)) return null;
-  for (const name of fs.readdirSync(dataRoot)) {
-    if (!name.startsWith("client_")) continue;
-    const dir = path.resolve(dataRoot, name);
-    const relative = path.relative(dataRoot, dir);
-    if (relative.startsWith("..") || path.isAbsolute(relative) || !fs.existsSync(dir)) continue;
-    const versionPath = versionFile(dir);
-    if (!versionPath) continue;
-    const version = JSON.parse(fs.readFileSync(versionPath, "utf8")) as { password?: unknown };
-    if (version.password === password) return dir;
+let passwordIndexCache: { mtimeMs: number; map: Record<string, string> } | null = null;
+
+function locate(password: string) {
+  const relative = passwordIndex()?.[password];
+  if (!relative) return null;
+  const book = bookPath(relative);
+  if (!book) return null;
+  const versionPath = versionFile(path.dirname(book));
+  if (!versionPath) return null;
+  return { book, versionPath };
+}
+
+function passwordIndex() {
+  const indexPath = path.join(dataRoot, "passwords.json");
+  if (!fs.existsSync(indexPath)) return null;
+  const mtimeMs = fs.statSync(indexPath).mtimeMs;
+  if (passwordIndexCache?.mtimeMs === mtimeMs) return passwordIndexCache.map;
+  const parsed = JSON.parse(fs.readFileSync(indexPath, "utf8")) as unknown;
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
+  const map: Record<string, string> = {};
+  for (const [password, file] of Object.entries(parsed)) {
+    if (typeof file === "string") map[password] = file;
   }
-  return null;
+  passwordIndexCache = { mtimeMs, map };
+  return map;
+}
+
+function bookPath(relative: string) {
+  const portable = relative.replace(/\\/g, "/");
+  if (!/^client_[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+\.json$/.test(portable)) return null;
+  const book = path.resolve(dataRoot, portable);
+  const fromRoot = path.relative(dataRoot, book);
+  if (fromRoot.startsWith("..") || path.isAbsolute(fromRoot)) return null;
+  return book;
+}
+
+function publicVersion(version: Record<string, unknown>, file: string) {
+  const text = (camel: string, snake: string) => {
+    const value = version[camel] ?? version[snake];
+    return typeof value === "string" ? value : undefined;
+  };
+  return {
+    clientId: text("clientId", "client_id"),
+    updatedAt: text("updatedAt", "updated_at"),
+    asOf: text("asOf", "as_of"),
+    file,
+  };
 }
 
 function versionFile(dir: string) {
@@ -92,12 +115,6 @@ function versionFile(dir: string) {
   if (fs.existsSync(preferred)) return preferred;
   const found = fs.readdirSync(dir).filter((name) => name.endsWith(".version.json"));
   return found.length === 1 ? path.join(dir, found[0]) : null;
-}
-
-function safeJsonName(file: string) {
-  if (file !== path.basename(file)) return null;
-  if (!/^[A-Za-z0-9._-]+\.json$/.test(file)) return null;
-  return file;
 }
 
 function readBody(req: IncomingMessage) {
